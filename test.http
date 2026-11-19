@@ -1,0 +1,128 @@
+### 1. Реєстрація Олени (201, без password)
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "username": "olena_k",
+  "email": "olena@example.com",
+  "password": "secret456",
+  "name": "Олена"
+}
+
+### 2. Вхід Івана
+# @name ivan
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "ivan_petrenko",
+  "password": "secret123"
+}
+
+### 3. Вхід Олени
+# @name olena
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "olena_k",
+  "password": "secret456"
+}
+
+### 4. Список, сторінка 1 (10 записів, total 12, totalPages 2)
+GET http://localhost:3000/announcements
+
+### 5. Сторінка 2 (2 записи)
+GET http://localhost:3000/announcements?page=2
+
+### 6. Пошук "ноутбук" маленькими (2 знайдено)
+GET http://localhost:3000/announcements?search=ноутбук
+
+### 7. Найстаріші спочатку
+GET http://localhost:3000/announcements?sort=oldest
+
+### 8. Погана сторінка (400)
+GET http://localhost:3000/announcements?page=0
+
+### 9. Одне оголошення з автором (200)
+GET http://localhost:3000/announcements/1
+
+### 10. Неіснуюче (404)
+GET http://localhost:3000/announcements/99999
+
+### 11. Некоректний id (400)
+GET http://localhost:3000/announcements/abc
+
+### 12. Створити БЕЗ токена (401)
+POST http://localhost:3000/announcements
+Content-Type: application/json
+
+{
+  "title": "Продам велосипед",
+  "description": "Гірський велосипед, 21 швидкість",
+  "price": 8000,
+  "category": "sale"
+}
+
+### 13. Створити з поганими даними (400)
+POST http://localhost:3000/announcements
+Authorization: Bearer {{ivan.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Ні",
+  "description": "коротко",
+  "price": -5,
+  "category": "car"
+}
+
+### 14. Іван створює оголошення (201)
+# @name created
+POST http://localhost:3000/announcements
+Authorization: Bearer {{ivan.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Продам велосипед",
+  "description": "Гірський велосипед, 21 швидкість",
+  "price": 8000,
+  "category": "sale"
+}
+
+### 15. PATCH з порожнім {} (400)
+PATCH http://localhost:3000/announcements/{{created.response.body.id}}
+Authorization: Bearer {{ivan.response.body.accessToken}}
+Content-Type: application/json
+
+{}
+
+### 16. Іван змінює своє (200, updatedAt змінився)
+PATCH http://localhost:3000/announcements/{{created.response.body.id}}
+Authorization: Bearer {{ivan.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Продам велосипед терміново",
+  "price": 6500
+}
+
+### 17. Олена змінює ЧУЖЕ (403)
+PATCH http://localhost:3000/announcements/{{created.response.body.id}}
+Authorization: Bearer {{olena.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "price": 1
+}
+
+### 18. Олена видаляє ЧУЖЕ (403)
+DELETE http://localhost:3000/announcements/{{created.response.body.id}}
+Authorization: Bearer {{olena.response.body.accessToken}}
+
+### 19. Іван видаляє своє (204)
+DELETE http://localhost:3000/announcements/{{created.response.body.id}}
+Authorization: Bearer {{ivan.response.body.accessToken}}
+
+### 20. Видалити ще раз (404)
+DELETE http://localhost:3000/announcements/{{created.response.body.id}}
+Authorization: Bearer {{ivan.response.body.accessToken}}
